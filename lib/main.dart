@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:streakup/models/habit.dart';
+import 'package:streakup/widgets/habit_list.dart';
 import 'package:streakup/widgets/new_habit.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -38,9 +39,28 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void deleteHabit(String id){
+   setState(() {
+      _habits.removeWhere((h) => h.id == id);
+   });
+  }
+
+  void markDayDone(String id){
+    setState(() {
+      final habit = _habits.firstWhere((h) => h.id == id);
+      if(habit.completedDays < habit.totalDays){
+        habit.completedDays++;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('StreakUp'),
+      ),
+      body: HabitList(_habits, markDayDone, deleteHabit),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: (){
