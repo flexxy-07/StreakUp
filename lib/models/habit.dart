@@ -13,6 +13,7 @@ class Habit {
     required this.completedDays,
   });
 
+  
   Map<String, dynamic> toMap() {
     return {
       'id' : id,
