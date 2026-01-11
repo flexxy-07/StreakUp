@@ -54,13 +54,20 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void resetStreak(String id){
+    setState(() {
+      final habit = _habits.firstWhere((h) => h.id == id);
+      habit.completedDays = 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('StreakUp'),
       ),
-      body: HabitList(_habits, markDayDone, deleteHabit),
+      body: HabitList(_habits, markDayDone, deleteHabit, resetStreak),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: (){

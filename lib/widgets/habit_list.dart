@@ -6,8 +6,9 @@ class HabitList extends StatelessWidget {
   final List<Habit> habits;
   final Function markDayDone;
   final Function deleteHabit;
+  final Function resetStreak;
 
-  HabitList(this.habits, this.markDayDone, this.deleteHabit);
+  HabitList(this.habits, this.markDayDone, this.deleteHabit, this.resetStreak);
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +36,7 @@ class HabitList extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => HabitCard(habit),
+                  builder: (context) => HabitCard(habit, markDayDone, resetStreak, deleteHabit),
                 ),
               );
             },
