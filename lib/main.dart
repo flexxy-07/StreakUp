@@ -58,6 +58,10 @@ class _HomeScreenState extends State<HomeScreen> {
     await prefs.setString('habits', data);
   } 
 
+  bool _isSameDay(DateTime a, DateTime b){
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
   void addHabit(String name, int totalDays) {
     final habit = new Habit(
       name: name,
@@ -65,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
       startDate: DateTime.now(),
       totalDays: totalDays,
       completedDays: 0,
+      lastCompletedDate: null
     );
 
     setState(() {
@@ -84,8 +89,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void markDayDone(String id){
     setState(() {
       final habit = _habits.firstWhere((h) => h.id == id);
-      if(habit.completedDays < habit.totalDays){
+
+      final now = DateTime.now();
+
+      if(habit.lastCompletedDate != null && _isSameDay(habit.lastCompletedDate!, now)) return;
+
+      if (habit.completedDays < habit.totalDays) {
         habit.completedDays++;
+        habit.lastCompletedDate = now;
       }
     });
     _saveHabits();

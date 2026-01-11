@@ -4,6 +4,7 @@ class Habit {
   final DateTime startDate;
   final int totalDays;
   int completedDays;
+  DateTime? lastCompletedDate;
 
   Habit({
     required this.name,
@@ -11,6 +12,7 @@ class Habit {
     required this.startDate,
     required this.totalDays,
     required this.completedDays,
+    required this.lastCompletedDate,
   });
 
   
@@ -21,6 +23,7 @@ class Habit {
       'startDate' : startDate.toIso8601String(),
       'totalDays' : totalDays,
       'completedDays' : completedDays,
+      'lastCompletedDate' : lastCompletedDate?.toIso8601String()
     };
   }
 
@@ -31,6 +34,7 @@ class Habit {
       startDate: DateTime.parse(map['startDate']),
       totalDays: map['totalDays'],
       completedDays: map['completedDays'],
+      lastCompletedDate: map['lastCompletedDate'] == null ? null : DateTime.parse(map['lastCompletedDate'])
     );
   }
 }

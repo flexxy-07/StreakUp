@@ -45,6 +45,10 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     final isCompleted = widget.habit.completedDays >= widget.habit.totalDays;
     final progress = widget.habit.completedDays / widget.habit.totalDays;
+    final alreadyDoneToday = widget.habit.lastCompletedDate != null &&
+      widget.habit.lastCompletedDate!.year == DateTime.now().year &&
+      widget.habit.lastCompletedDate!.month == DateTime.now().month && 
+      widget.habit.lastCompletedDate!.day == DateTime.now().day;
     
     final gradientColors = isCompleted
         ? [Color(0xFF11998E), Color(0xFF38EF7D)]
@@ -77,7 +81,7 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
                       SizedBox(height: 40),
                       _buildStatsCard(isCompleted),
                       SizedBox(height: 32),
-                      _buildMarkDoneButton(isCompleted, gradientColors),
+                      _buildMarkDoneButton(isCompleted, alreadyDoneToday, gradientColors),
                       SizedBox(height: 16),
                       _buildSecondaryActions(context),
                     ],
@@ -327,7 +331,7 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildMarkDoneButton(bool isCompleted, List<Color> gradientColors) {
+  Widget _buildMarkDoneButton(bool isCompleted, bool alreadyDoneToday, List<Color> gradientColors) {
     return Container(
       width: double.infinity,
       height: 64,
@@ -370,7 +374,7 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
                 ),
                 SizedBox(width: 12),
                 Text(
-                  isCompleted ? 'COMPLETED!' : 'MARK AS DONE',
+                  isCompleted ? 'COMPLETED!' : alreadyDoneToday ? 'Done for Today' : 'Mark Done',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
