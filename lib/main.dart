@@ -69,7 +69,8 @@ class _HomeScreenState extends State<HomeScreen> {
       startDate: DateTime.now(),
       totalDays: totalDays,
       completedDays: 0,
-      lastCompletedDate: null
+      lastCompletedDate: null,
+      completedDates:[]
     );
 
     setState(() {
@@ -89,14 +90,13 @@ class _HomeScreenState extends State<HomeScreen> {
   void markDayDone(String id){
     setState(() {
       final habit = _habits.firstWhere((h) => h.id == id);
+      final today = DateTime.now();
 
-      final now = DateTime.now();
+      bool alreadyDoneToday = habit.completedDates.any((d) => d.year == today.year && d.month == today.month && d.day == today.day);
 
-      if(habit.lastCompletedDate != null && _isSameDay(habit.lastCompletedDate!, now)) return;
-
-      if (habit.completedDays < habit.totalDays) {
-        habit.completedDays++;
-        habit.lastCompletedDate = now;
+      if(!alreadyDoneToday && habit.completedDates.length < habit.totalDays){
+        habit.completedDates.add(today);
+        habit.lastCompletedDate = today;
       }
     });
     _saveHabits();
@@ -105,7 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void resetStreak(String id){
     setState(() {
       final habit = _habits.firstWhere((h) => h.id == id);
-      habit.completedDays = 0;
+      habit.completedDates.clear();
+      habit.lastCompletedDate = null;
     });
 
     _saveHabits();

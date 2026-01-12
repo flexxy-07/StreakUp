@@ -5,6 +5,8 @@ class Habit {
   final int totalDays;
   int completedDays;
   DateTime? lastCompletedDate;
+  // for the calender view
+  List<DateTime> completedDates;
 
   Habit({
     required this.name,
@@ -13,6 +15,7 @@ class Habit {
     required this.totalDays,
     required this.completedDays,
     required this.lastCompletedDate,
+    required this.completedDates,
   });
 
   
@@ -22,19 +25,33 @@ class Habit {
       'name' : name,
       'startDate' : startDate.toIso8601String(),
       'totalDays' : totalDays,
-      'completedDays' : completedDays,
-      'lastCompletedDate' : lastCompletedDate?.toIso8601String()
+      'completedDays' : completedDates.length,
+      'lastCompletedDate' : lastCompletedDate?.toIso8601String(),
+      'completedDates' : completedDates.map((d) => d.toIso8601String()).toList()
     };
   }
 
   factory Habit.fromMap(Map<String, dynamic> map){
+    List<DateTime> dates = [];
+
+    if(map['completedDates'] != null){
+      dates = (map['completedDates'] as List).map((d) => DateTime.parse(d)).toList();
+
+    }else{
+      int count = map['completedDays'] ?? 0;
+      DateTime start = DateTime.parse(map['startDate']);
+      for(int i = 0; i < count; i++){
+        dates.add(start.add(Duration(days: i)));
+      }
+    }
     return Habit(
       id: map['id'],
       name: map['name'],
       startDate: DateTime.parse(map['startDate']),
       totalDays: map['totalDays'],
-      completedDays: map['completedDays'],
-      lastCompletedDate: map['lastCompletedDate'] == null ? null : DateTime.parse(map['lastCompletedDate'])
+      completedDays:dates.length,
+      lastCompletedDate: map['lastCompletedDate'] == null ? null : DateTime.parse(map['lastCompletedDate']),
+      completedDates: dates,
     );
   }
 }

@@ -23,7 +23,7 @@ class HabitList extends StatelessWidget {
       itemBuilder: (context, index) {
         final habit = habits[index];
 
-        final progress = habit.completedDays / habit.totalDays;
+        final progress = habit.completedDates.length / habit.totalDays;
 
         return Card(
           margin: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -75,7 +75,7 @@ class HabitList extends StatelessWidget {
 
                   // Progress text
                   Text(
-                    "${habit.completedDays} / ${habit.totalDays} days completed",
+                    "${habit.completedDates.length} / ${habit.totalDays} days completed",
                     style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   ),
 

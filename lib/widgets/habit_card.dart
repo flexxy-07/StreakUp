@@ -13,10 +13,11 @@ class HabitCard extends StatefulWidget {
   _HabitCardState createState() => _HabitCardState();
 }
 
-class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMixin {
+class _HabitCardState extends State<HabitCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _celebrationController;
   late Animation<double> _scaleAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -41,19 +42,36 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
     });
   }
 
+  List<DateTime> get last14Days {
+    return List.generate(14, (index) {
+      return DateTime.now().subtract(Duration(days: 13 - index));
+    });
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  bool _isCompletedOn(DateTime day) {
+    return widget.habit.completedDates.any((d) => _isSameDay(d, day));
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isCompleted = widget.habit.completedDays >= widget.habit.totalDays;
-    final progress = widget.habit.completedDays / widget.habit.totalDays;
-    final alreadyDoneToday = widget.habit.lastCompletedDate != null &&
-      widget.habit.lastCompletedDate!.year == DateTime.now().year &&
-      widget.habit.lastCompletedDate!.month == DateTime.now().month && 
-      widget.habit.lastCompletedDate!.day == DateTime.now().day;
-    
+    final isCompleted =
+        widget.habit.completedDates.length >= widget.habit.totalDays;
+    final progress =
+        widget.habit.completedDates.length / widget.habit.totalDays;
+    final alreadyDoneToday =
+        widget.habit.lastCompletedDate != null &&
+        widget.habit.lastCompletedDate!.year == DateTime.now().year &&
+        widget.habit.lastCompletedDate!.month == DateTime.now().month &&
+        widget.habit.lastCompletedDate!.day == DateTime.now().day;
+
     final gradientColors = isCompleted
         ? [Color(0xFF11998E), Color(0xFF38EF7D)]
         : [Color(0xFF667EEA), Color(0xFF764BA2)];
-    
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -77,11 +95,29 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
                   child: Column(
                     children: <Widget>[
                       SizedBox(height: 20),
-                      _buildProgressCircle(progress, isCompleted, gradientColors),
+                      _buildProgressCircle(
+                        progress,
+                        isCompleted,
+                        gradientColors,
+                      ),
                       SizedBox(height: 40),
                       _buildStatsCard(isCompleted),
                       SizedBox(height: 32),
-                      _buildMarkDoneButton(isCompleted, alreadyDoneToday, gradientColors),
+                      Text(
+                        "Last 14 Days",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      _buildCalendarView(),
+                      SizedBox(height: 32),
+                      _buildMarkDoneButton(
+                        isCompleted,
+                        alreadyDoneToday,
+                        gradientColors,
+                      ),
                       SizedBox(height: 16),
                       _buildSecondaryActions(context),
                     ],
@@ -92,6 +128,41 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCalendarView() {
+    final days = last14Days;
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: days.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 7,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+      ),
+      itemBuilder: (context, index) {
+        final day = days[index];
+        final done = _isCompletedOn(day);
+
+        return Container(
+          decoration: BoxDecoration(
+            color: done ? Colors.green : Colors.grey[300],
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Center(
+            child: Text(
+              "${day.day}",
+              style: TextStyle(
+                color: done ? Colors.white : Colors.black54,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -139,7 +210,11 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildProgressCircle(double progress, bool isCompleted, List<Color> gradientColors) {
+  Widget _buildProgressCircle(
+    double progress,
+    bool isCompleted,
+    List<Color> gradientColors,
+  ) {
     return ScaleTransition(
       scale: _scaleAnimation,
       child: Container(
@@ -169,9 +244,7 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
                   value: 1.0,
                   strokeWidth: 14,
                   backgroundColor: Colors.transparent,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Colors.grey[200]!,
-                  ),
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[200]!),
                 ),
               ),
               // Progress circle with gradient effect
@@ -220,7 +293,7 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
                   ),
                   SizedBox(height: 8),
                   Text(
-                    '${widget.habit.completedDays} / ${widget.habit.totalDays} days',
+                    '${widget.habit.completedDates.length} / ${widget.habit.totalDays} days',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[600],
@@ -231,7 +304,10 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
                   if (isCompleted) ...[
                     SizedBox(height: 8),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(colors: gradientColors),
                         borderRadius: BorderRadius.circular(20),
@@ -257,9 +333,12 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
   }
 
   Widget _buildStatsCard(bool isCompleted) {
-    final daysRemaining = widget.habit.totalDays - widget.habit.completedDays;
-    final streakPercentage = ((widget.habit.completedDays / widget.habit.totalDays) * 100).toStringAsFixed(1);
-    
+    final daysRemaining =
+        widget.habit.totalDays - widget.habit.completedDates.length;
+    final streakPercentage =
+        ((widget.habit.completedDates.length / widget.habit.totalDays) * 100)
+            .toStringAsFixed(1);
+
     return Container(
       padding: EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -278,15 +357,11 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
         children: [
           _buildStatItem(
             Icons.local_fire_department,
-            '${widget.habit.completedDays}',
+            '${widget.habit.completedDates.length}',
             'Days Done',
             Colors.orange,
           ),
-          Container(
-            width: 1,
-            height: 50,
-            color: Colors.grey[200],
-          ),
+          Container(width: 1, height: 50, color: Colors.grey[200]),
           _buildStatItem(
             isCompleted ? Icons.emoji_events : Icons.flag,
             isCompleted ? '100%' : '$daysRemaining',
@@ -298,7 +373,12 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildStatItem(IconData icon, String value, String label, Color color) {
+  Widget _buildStatItem(
+    IconData icon,
+    String value,
+    String label,
+    Color color,
+  ) {
     return Column(
       children: [
         Container(
@@ -331,7 +411,11 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildMarkDoneButton(bool isCompleted, bool alreadyDoneToday, List<Color> gradientColors) {
+  Widget _buildMarkDoneButton(
+    bool isCompleted,
+    bool alreadyDoneToday,
+    List<Color> gradientColors,
+  ) {
     return Container(
       width: double.infinity,
       height: 64,
@@ -358,7 +442,8 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
               : () {
                   widget.markDayDone(widget.habit.id);
                   setState(() {});
-                  if (widget.habit.completedDays + 1 >= widget.habit.totalDays) {
+                  if (widget.habit.completedDays + 1 >=
+                      widget.habit.totalDays) {
                     _triggerCelebration();
                   }
                 },
@@ -374,7 +459,11 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
                 ),
                 SizedBox(width: 12),
                 Text(
-                  isCompleted ? 'COMPLETED!' : alreadyDoneToday ? 'Done for Today' : 'Mark Done',
+                  isCompleted
+                      ? 'COMPLETED!'
+                      : alreadyDoneToday
+                      ? 'Done for Today'
+                      : 'Mark Done',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -469,7 +558,9 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Row(
             children: [
               Icon(Icons.refresh, color: Colors.blue),
@@ -494,7 +585,9 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: Text('Reset', style: TextStyle(color: Colors.white)),
             ),
@@ -509,7 +602,9 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Row(
             children: [
               Icon(Icons.warning_amber_rounded, color: Colors.red),
@@ -534,7 +629,9 @@ class _HabitCardState extends State<HabitCard> with SingleTickerProviderStateMix
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: Text('Delete', style: TextStyle(color: Colors.white)),
             ),
