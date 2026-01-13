@@ -62,6 +62,8 @@ class _HabitCardState extends State<HabitCard>
         widget.habit.completedDates.length >= widget.habit.totalDays;
     final progress =
         widget.habit.completedDates.length / widget.habit.totalDays;
+
+    final currentStreak = widget.habit.getCurrentStreak();
     final alreadyDoneToday =
         widget.habit.lastCompletedDate != null &&
         widget.habit.lastCompletedDate!.year == DateTime.now().year &&
@@ -338,6 +340,7 @@ class _HabitCardState extends State<HabitCard>
     final streakPercentage =
         ((widget.habit.completedDates.length / widget.habit.totalDays) * 100)
             .toStringAsFixed(1);
+    final currentStreak = widget.habit.getCurrentStreak();
 
     return Container(
       padding: EdgeInsets.all(24),
@@ -353,20 +356,34 @@ class _HabitCardState extends State<HabitCard>
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildStatItem(
-            Icons.local_fire_department,
-            '${widget.habit.completedDates.length}',
-            'Days Done',
-            Colors.orange,
+          Expanded(
+            child: _buildStatItem(
+              Icons.local_fire_department,
+              '$currentStreak',
+              'Streak',
+              Colors.red,
+            ),
           ),
-          Container(width: 1, height: 50, color: Colors.grey[200]),
-          _buildStatItem(
-            isCompleted ? Icons.emoji_events : Icons.flag,
-            isCompleted ? '100%' : '$daysRemaining',
-            isCompleted ? 'Success!' : 'Remaining',
-            isCompleted ? Colors.amber : Colors.blue,
+          Container(width: 1, height: 60, color: Colors.grey[200]),
+          Expanded(
+            child: _buildStatItem(
+              Icons.check_circle,
+              '${widget.habit.completedDates.length}',
+              'Days Done',
+              Colors.orange,
+            ),
+          ),
+          Container(width: 1, height: 60, color: Colors.grey[200]),
+          Expanded(
+            child: _buildStatItem(
+              isCompleted ? Icons.emoji_events : Icons.flag,
+              isCompleted ? '100%' : '$daysRemaining',
+              isCompleted ? 'Success!' : 'Remaining',
+              isCompleted ? Colors.amber : Colors.blue,
+            ),
           ),
         ],
       ),
@@ -401,6 +418,9 @@ class _HabitCardState extends State<HabitCard>
         SizedBox(height: 4),
         Text(
           label,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontSize: 13,
             color: Colors.grey[600],

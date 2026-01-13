@@ -54,4 +54,35 @@ class Habit {
       completedDates: dates,
     );
   }
+
+  
+
+  int getCurrentStreak(){
+    if(completedDates.isEmpty) return 0;
+
+    bool _isSameDay(DateTime a, DateTime b){
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+    final dates = [...completedDates];
+    dates.sort((a,b) => a.compareTo(b));
+
+    int streak = 0;
+
+    DateTime today = DateTime.now();
+
+    // nomalizing the data
+    // removing time part
+    DateTime currentDay = DateTime(today.year, today.month, today.day);
+
+    while(true){
+      bool found = dates.any((d) => _isSameDay(d, currentDay));
+
+      if(found){
+        streak++;
+        currentDay = currentDay.subtract(Duration(days: 1));
+      }else break;
+    }
+      return streak;
+  }
 }
