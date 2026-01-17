@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:streakup/models/habit.dart';
-import 'dart:math' as math;
 
 class HabitCard extends StatefulWidget {
   final Habit habit;
@@ -70,22 +69,9 @@ class _HabitCardState extends State<HabitCard>
         widget.habit.lastCompletedDate!.month == DateTime.now().month &&
         widget.habit.lastCompletedDate!.day == DateTime.now().day;
 
-    final gradientColors = isCompleted
-        ? [Color(0xFF11998E), Color(0xFF38EF7D)]
-        : [Color(0xFF667EEA), Color(0xFF764BA2)];
-
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              gradientColors[0].withOpacity(0.1),
-              gradientColors[1].withOpacity(0.05),
-            ],
-          ),
-        ),
+        color: Color(0xFFFAFAFC),
         child: SafeArea(
           child: Column(
             children: [
@@ -93,33 +79,26 @@ class _HabitCardState extends State<HabitCard>
               Expanded(
                 child: SingleChildScrollView(
                   physics: BouncingScrollPhysics(),
-                  padding: const EdgeInsets.all(24.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
                     children: <Widget>[
                       SizedBox(height: 20),
-                      _buildProgressCircle(
-                        progress,
-                        isCompleted,
-                        gradientColors,
-                      ),
+                      _buildProgressCircle(progress, isCompleted),
                       SizedBox(height: 40),
-                      _buildStatsCard(isCompleted),
+                      _buildStatsCard(isCompleted, currentStreak),
                       SizedBox(height: 32),
                       Text(
                         "Last 14 Days",
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1F2937),
                         ),
                       ),
                       SizedBox(height: 16),
                       _buildCalendarView(),
                       SizedBox(height: 32),
-                      _buildMarkDoneButton(
-                        isCompleted,
-                        alreadyDoneToday,
-                        gradientColors,
-                      ),
+                      _buildMarkDoneButton(isCompleted, alreadyDoneToday),
                       SizedBox(height: 16),
                       _buildSecondaryActions(context),
                     ],
@@ -148,19 +127,36 @@ class _HabitCardState extends State<HabitCard>
       itemBuilder: (context, index) {
         final day = days[index];
         final done = _isCompletedOn(day);
+        final isToday = _isSameDay(day, DateTime.now());
 
         return Container(
           decoration: BoxDecoration(
-            color: done ? Colors.green : Colors.grey[300],
+            color: done ? Color(0xFF10B981) : Colors.white,
+            border: isToday ? Border.all(color: Color(0xFF5B4EF5), width: 2) : null,
             borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Center(
-            child: Text(
-              "${day.day}",
-              style: TextStyle(
-                color: done ? Colors.white : Colors.black54,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "${day.day}",
+                  style: TextStyle(
+                    color: done ? Colors.white : Color(0xFF1F2937),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+                if (done)
+                  Icon(Icons.check, color: Colors.white, size: 12),
+              ],
             ),
           ),
         );
@@ -188,7 +184,7 @@ class _HabitCardState extends State<HabitCard>
             child: IconButton(
               icon: Icon(Icons.arrow_back_ios_new, size: 20),
               onPressed: () => Navigator.pop(context),
-              color: Colors.grey[800],
+              color: Color(0xFF1F2937),
             ),
           ),
           Expanded(
@@ -197,26 +193,22 @@ class _HabitCardState extends State<HabitCard>
               child: Text(
                 widget.habit.name,
                 style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[900],
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1F2937),
                   letterSpacing: -0.5,
                 ),
                 textAlign: TextAlign.center,
               ),
             ),
           ),
-          SizedBox(width: 48), // Balance the back button
+          SizedBox(width: 48),
         ],
       ),
     );
   }
 
-  Widget _buildProgressCircle(
-    double progress,
-    bool isCompleted,
-    List<Color> gradientColors,
-  ) {
+  Widget _buildProgressCircle(double progress, bool isCompleted) {
     return ScaleTransition(
       scale: _scaleAnimation,
       child: Container(
@@ -227,7 +219,7 @@ class _HabitCardState extends State<HabitCard>
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: gradientColors[0].withOpacity(0.3),
+              color: Color(0xFF5B4EF5).withOpacity(0.2),
               blurRadius: 40,
               offset: Offset(0, 20),
             ),
@@ -244,12 +236,12 @@ class _HabitCardState extends State<HabitCard>
                 height: 220,
                 child: CircularProgressIndicator(
                   value: 1.0,
-                  strokeWidth: 14,
-                  backgroundColor: Colors.transparent,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[200]!),
+                  strokeWidth: 12,
+                  backgroundColor: Color(0xFFF3F4F6),
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.transparent),
                 ),
               ),
-              // Progress circle with gradient effect
+              // Progress circle
               SizedBox(
                 width: 220,
                 height: 220,
@@ -259,11 +251,11 @@ class _HabitCardState extends State<HabitCard>
                   tween: Tween<double>(begin: 0, end: progress),
                   builder: (context, value, _) => CircularProgressIndicator(
                     value: value,
-                    strokeWidth: 14,
+                    strokeWidth: 12,
                     strokeCap: StrokeCap.round,
                     backgroundColor: Colors.transparent,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      gradientColors[0],
+                      isCompleted ? Color(0xFF10B981) : Color(0xFF5B4EF5),
                     ),
                   ),
                 ),
@@ -276,51 +268,44 @@ class _HabitCardState extends State<HabitCard>
                     Icon(
                       Icons.celebration_outlined,
                       size: 48,
-                      color: gradientColors[0],
+                      color: Color(0xFF10B981),
                     ),
                   SizedBox(height: isCompleted ? 8 : 0),
-                  ShaderMask(
-                    shaderCallback: (bounds) => LinearGradient(
-                      colors: gradientColors,
-                    ).createShader(bounds),
-                    child: Text(
-                      "${(progress * 100).toStringAsFixed(0)}%",
-                      style: TextStyle(
-                        fontSize: 52,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: -2,
-                      ),
+                  Text(
+                    "${(progress * 100).toStringAsFixed(0)}%",
+                    style: TextStyle(
+                      fontSize: 52,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1F2937),
+                      letterSpacing: -2,
                     ),
                   ),
                   SizedBox(height: 8),
                   Text(
                     '${widget.habit.completedDates.length} / ${widget.habit.totalDays} days',
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.5,
+                      fontSize: 15,
+                      color: Color(0xFF6B7280),
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
                     ),
                   ),
                   if (isCompleted) ...[
-                    SizedBox(height: 8),
+                    SizedBox(height: 12),
                     Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 6,
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: gradientColors),
-                        borderRadius: BorderRadius.circular(20),
+                        color: Color(0xFF10B981).withOpacity(0.1),
+                        border: Border.all(color: Color(0xFF10B981), width: 1.5),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         'COMPLETED',
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 1.2,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF10B981),
+                          letterSpacing: 1.0,
                         ),
                       ),
                     ),
@@ -334,24 +319,21 @@ class _HabitCardState extends State<HabitCard>
     );
   }
 
-  Widget _buildStatsCard(bool isCompleted) {
+  Widget _buildStatsCard(bool isCompleted, int currentStreak) {
     final daysRemaining =
         widget.habit.totalDays - widget.habit.completedDates.length;
-    final streakPercentage =
-        ((widget.habit.completedDates.length / widget.habit.totalDays) * 100)
-            .toStringAsFixed(1);
-    final currentStreak = widget.habit.getCurrentStreak();
 
     return Container(
-      padding: EdgeInsets.all(24),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Color(0xFFE5E7EB), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: Offset(0, 10),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -363,26 +345,29 @@ class _HabitCardState extends State<HabitCard>
             child: _buildStatItem(
               Icons.local_fire_department,
               '$currentStreak',
+              'Current',
               'Streak',
-              Colors.red,
+              Color(0xFFEF4444),
             ),
           ),
-          Container(width: 1, height: 60, color: Colors.grey[200]),
+          Container(width: 1, height: 70, color: Color(0xFFE5E7EB)),
           Expanded(
             child: _buildStatItem(
               Icons.check_circle,
               '${widget.habit.completedDates.length}',
-              'Days Done',
-              Colors.orange,
+              'Days',
+              'Done',
+              Color(0xFF10B981),
             ),
           ),
-          Container(width: 1, height: 60, color: Colors.grey[200]),
+          Container(width: 1, height: 70, color: Color(0xFFE5E7EB)),
           Expanded(
             child: _buildStatItem(
               isCompleted ? Icons.emoji_events : Icons.flag,
-              isCompleted ? '100%' : '$daysRemaining',
-              isCompleted ? 'Success!' : 'Remaining',
-              isCompleted ? Colors.amber : Colors.blue,
+              isCompleted ? 'Goal' : '$daysRemaining',
+              isCompleted ? 'Achieved' : 'To Go',
+              isCompleted ? 'Achieved' : 'Remaining',
+              isCompleted ? Color(0xFFF59E0B) : Color(0xFF3B82F6),
             ),
           ),
         ],
@@ -393,66 +378,75 @@ class _HabitCardState extends State<HabitCard>
   Widget _buildStatItem(
     IconData icon,
     String value,
-    String label,
+    String label1,
+    String label2,
     Color color,
   ) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: EdgeInsets.all(12),
+          padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(icon, color: color, size: 28),
+          child: Icon(icon, color: color, size: 26),
         ),
-        SizedBox(height: 12),
+        SizedBox(height: 10),
         Text(
           value,
           style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[900],
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF1F2937),
           ),
         ),
-        SizedBox(height: 4),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w500,
-          ),
+        SizedBox(height: 2),
+        Column(
+          children: [
+            Text(
+              label1,
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF6B7280),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Text(
+              label2,
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF6B7280),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildMarkDoneButton(
-    bool isCompleted,
-    bool alreadyDoneToday,
-    List<Color> gradientColors,
-  ) {
+  Widget _buildMarkDoneButton(bool isCompleted, bool alreadyDoneToday) {
+    final buttonColor = isCompleted
+        ? Color(0xFF10B981)
+        : alreadyDoneToday
+            ? Color(0xFFF59E0B)
+            : Color(0xFF5B4EF5);
+
     return Container(
       width: double.infinity,
-      height: 64,
+      height: 60,
       decoration: BoxDecoration(
-        gradient: isCompleted
-            ? LinearGradient(colors: [Colors.grey[400]!, Colors.grey[400]!])
-            : LinearGradient(colors: gradientColors),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: isCompleted
-            ? []
-            : [
-                BoxShadow(
-                  color: gradientColors[0].withOpacity(0.4),
-                  blurRadius: 20,
-                  offset: Offset(0, 10),
-                ),
-              ],
+        color: buttonColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: buttonColor.withOpacity(0.3),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -462,12 +456,12 @@ class _HabitCardState extends State<HabitCard>
               : () {
                   widget.markDayDone(widget.habit.id);
                   setState(() {});
-                  if (widget.habit.completedDays + 1 >=
+                  if (widget.habit.completedDates.length >=
                       widget.habit.totalDays) {
                     _triggerCelebration();
                   }
                 },
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Center(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -475,7 +469,7 @@ class _HabitCardState extends State<HabitCard>
                 Icon(
                   isCompleted ? Icons.check_circle : Icons.check_circle_outline,
                   color: Colors.white,
-                  size: 28,
+                  size: 26,
                 ),
                 SizedBox(width: 12),
                 Text(
@@ -486,9 +480,9 @@ class _HabitCardState extends State<HabitCard>
                       : 'Mark Done',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                     color: Colors.white,
-                    letterSpacing: 1.2,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ],
@@ -506,18 +500,18 @@ class _HabitCardState extends State<HabitCard>
           child: _buildActionButton(
             icon: Icons.refresh,
             label: 'Reset',
-            color: Colors.blue,
+            color: Color(0xFF3B82F6),
             onTap: () {
               _showResetDialog(context);
             },
           ),
         ),
-        SizedBox(width: 16),
+        SizedBox(width: 12),
         Expanded(
           child: _buildActionButton(
             icon: Icons.delete_outline,
             label: 'Delete',
-            color: Colors.red,
+            color: Color(0xFFEF4444),
             onTap: () {
               _showDeleteDialog(context);
             },
@@ -534,16 +528,16 @@ class _HabitCardState extends State<HabitCard>
     required VoidCallback onTap,
   }) {
     return Container(
-      height: 56,
+      height: 52,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
-            offset: Offset(0, 4),
+            offset: Offset(0, 3),
           ),
         ],
       ),
@@ -551,17 +545,17 @@ class _HabitCardState extends State<HabitCard>
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: color, size: 22),
+              Icon(icon, color: color, size: 20),
               SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                   color: color,
                   letterSpacing: 0.3,
                 ),
@@ -578,38 +572,69 @@ class _HabitCardState extends State<HabitCard>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Color(0xFFFAFAFC),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
           title: Row(
             children: [
-              Icon(Icons.refresh, color: Colors.blue),
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Color(0xFF3B82F6).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.refresh, color: Color(0xFF3B82F6), size: 24),
+              ),
               SizedBox(width: 12),
-              Text('Reset Streak?'),
+              Text(
+                'Reset Streak?',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
             ],
           ),
           content: Text(
             'This will reset your progress back to 0. Are you sure?',
-            style: TextStyle(color: Colors.grey[700]),
+            style: TextStyle(
+              color: Color(0xFF6B7280),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Color(0xFF6B7280),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: () {
                 widget.resetStreak(widget.habit.id);
                 setState(() {});
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+              style: FilledButton.styleFrom(
+                backgroundColor: Color(0xFF3B82F6),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child: Text('Reset', style: TextStyle(color: Colors.white)),
+              child: Text(
+                'Reset',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ],
         );
@@ -622,38 +647,69 @@ class _HabitCardState extends State<HabitCard>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Color(0xFFFAFAFC),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
           title: Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.red),
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Color(0xFFEF4444).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 24),
+              ),
               SizedBox(width: 12),
-              Text('Delete Habit?'),
+              Text(
+                'Delete Habit?',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
             ],
           ),
           content: Text(
             'This will permanently delete this habit and all its progress.',
-            style: TextStyle(color: Colors.grey[700]),
+            style: TextStyle(
+              color: Color(0xFF6B7280),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Color(0xFF6B7280),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: () {
                 widget.deleteHabit(widget.habit.id);
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+              style: FilledButton.styleFrom(
+                backgroundColor: Color(0xFFEF4444),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child: Text('Delete', style: TextStyle(color: Colors.white)),
+              child: Text(
+                'Delete',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ],
         );
