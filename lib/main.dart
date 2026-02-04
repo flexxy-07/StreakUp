@@ -6,12 +6,13 @@ import 'package:streakup/widgets/dashboard_header.dart';
 import 'package:streakup/widgets/habit_list.dart';
 import 'package:streakup/widgets/new_habit.dart';
 
+
 class HomeScreen extends StatefulWidget {
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-void main(){
+void main() {
   runApp(MyApp());
 }
 

@@ -20,7 +20,10 @@ class _NewHabitState extends State<NewHabit> {
 
     if(name.isEmpty || days == null || days <= 0) return;
 
-    widget.addHabit(name, days);
+    // Capitalize first letter
+    final capitalizedName = name[0].toUpperCase() + name.substring(1);
+
+    widget.addHabit(capitalizedName, days);
 
     Navigator.of(context).pop();
   }
